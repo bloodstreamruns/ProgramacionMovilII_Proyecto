@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
-const Periodo = require('../modelos/carreras');
+const db = require('../configuracion/db');
+const Periodo = require('../modelos/periodo');
 
 const crearPeriodo = async (req, res) => {
   const errores = validationResult(req);

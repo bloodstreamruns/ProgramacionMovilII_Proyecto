@@ -3,14 +3,18 @@ const path = require('path');
 const fs = require('fs');
 const Estudiante = require('../modelos/estudiante');
 const Carrera = require('../modelos/carreras');
-const { uploadImagen } = require('../configuraciones/archivos');
 const Usuario = require('../modelos/usuario');
+const { uploadImagen } = require('../configuraciones/archivos');
 
 const DIRECTORIO_IMAGENES = path.join(__dirname, '../../public/img');
 
 const incluir = [
   { model: Carrera, as: 'carrera', attributes: ['id', 'codigo', 'nombre'] },
-  { model: Usuario, as: 'usuario', attributes: ['id', 'nombre', 'correoElectronico', 'rol', 'estado'] },
+  {
+    model: Usuario,
+    as: 'usuario',
+    attributes: ['id', 'nombre', 'correoElectronico', 'rol', 'estado'],
+  },
 ];
 
 const borrarImagen = (nombre) => {
@@ -94,12 +98,13 @@ const crearEstudiante = async (req, res) => {
   const {
     identidad, cuenta, primerNombre, segundoNombre = null, primerApellido,
     segundoApellido = null, correoElectronico, estado = true, carreraId,
+    usuarioId = null,
   } = req.body;
 
   try {
     const nuevo = await Estudiante.create({
       identidad, cuenta, primerNombre, segundoNombre, primerApellido,
-      segundoApellido, correoElectronico, estado, carreraId,
+      segundoApellido, correoElectronico, estado, carreraId, usuarioId,
     });
     const creado = await Estudiante.findByPk(nuevo.id, { include: incluir });
     res.status(201).json(creado);
@@ -118,7 +123,7 @@ const actualizarEstudiante = async (req, res) => {
   const { id } = req.query;
   const {
     identidad, cuenta, primerNombre, segundoNombre = null, primerApellido,
-    segundoApellido = null, correoElectronico, estado, carreraId,
+    segundoApellido = null, correoElectronico, estado, carreraId, usuarioId,
   } = req.body;
 
   try {
@@ -127,10 +132,13 @@ const actualizarEstudiante = async (req, res) => {
       return res.status(404).json({ error: 'Estudiante no encontrado' });
     }
 
-    await estudiante.update({
+    const datos = {
       identidad, cuenta, primerNombre, segundoNombre, primerApellido,
       segundoApellido, correoElectronico, estado, carreraId,
-    });
+    };
+    if (usuarioId !== undefined) datos.usuarioId = usuarioId;
+
+    await estudiante.update(datos);
     const actualizado = await Estudiante.findByPk(id, { include: incluir });
     res.json(actualizado);
   } catch (error) {

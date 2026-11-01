@@ -4,6 +4,7 @@ const { Op } = require('sequelize');
 const controladorEstudiantes = require('../controladores/controladorEstudiantes');
 const Estudiante = require('../modelos/estudiante');
 const Carrera = require('../modelos/carreras');
+const Usuario = require('../modelos/usuario');
 const router = Router();
 
 const campoUnico = (campo, mensaje) => async (value, { req }) => {
@@ -20,6 +21,22 @@ const validarCarreraExistente = async (value) => {
   const carrera = await Carrera.findByPk(value);
   if (!carrera) {
     throw new Error('La carrera con el ID proporcionado no existe');
+  }
+  return true;
+};
+
+const validarUsuarioDisponible = async (value, { req }) => {
+  const usuario = await Usuario.findByPk(value);
+  if (!usuario) {
+    throw new Error('El usuario con el ID proporcionado no existe');
+  }
+  if (usuario.rol !== 'estudiante') {
+    throw new Error('El usuario debe tener el rol estudiante');
+  }
+  const where = { usuarioId: value };
+  if (req.query.id) where.id = { [Op.ne]: Number(req.query.id) };
+  if (await Estudiante.findOne({ where })) {
+    throw new Error('El usuario ya está vinculado a otro estudiante');
   }
   return true;
 };
@@ -50,6 +67,9 @@ const validacionesCuerpo = [
   body('carreraId').notEmpty().withMessage('El ID de la carrera es obligatorio')
     .isInt().withMessage('El ID de la carrera debe ser un número entero')
     .custom(validarCarreraExistente),
+  body('usuarioId').optional({ nullable: true })
+    .isInt().withMessage('El ID del usuario debe ser un número entero')
+    .custom(validarUsuarioDisponible),
 ];
 
 /**
@@ -301,6 +321,10 @@ router.put('/imagen',
  *           description: Obligatorio al actualizar
  *         carreraId:
  *           type: integer
+ *         usuarioId:
+ *           type: integer
+ *           nullable: true
+ *           description: Usuario con rol estudiante vinculado. Si se omite al actualizar, se conserva el vínculo actual
  *     Estudiante:
  *       type: object
  *       properties:
@@ -328,6 +352,9 @@ router.put('/imagen',
  *           type: string
  *         carreraId:
  *           type: integer
+ *         usuarioId:
+ *           type: integer
+ *           nullable: true
  *         carrera:
  *           type: object
  *           properties:
@@ -337,5 +364,19 @@ router.put('/imagen',
  *               type: string
  *             nombre:
  *               type: string
+ *         usuario:
+ *           type: object
+ *           nullable: true
+ *           properties:
+ *             id:
+ *               type: integer
+ *             nombre:
+ *               type: string
+ *             correoElectronico:
+ *               type: string
+ *             rol:
+ *               type: string
+ *             estado:
+ *               type: boolean
  */
 module.exports = router;

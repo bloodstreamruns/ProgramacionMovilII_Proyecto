@@ -1,11 +1,10 @@
 const { Router } = require('express');
 const router = Router();
 
-router.use('/asignaturas', require('./rutasAsignaturas'));
-router.use('/eventos', require('./rutasEventos'));
-router.use('/recordatorios', require('./rutasRecordatorios'));
-router.use('/horarios', require('./rutasHorarios'));
-router.use('/periodos', require('./rutasPeriodos'));
-router.use('/metas', require('./rutasMetas'));
+router.use('/carreras', require('./rutas/rutasCarreras'));
+router.use('/estudiantes', require('./rutas/rutasEstudiantes'));
+router.use('/asignaturas', require('./rutas/rutasAsignaturas'));
+router.use('/eventos', require('./rutas/rutasEventos'));
+router.use('/recordatorios', require('./rutas/rutasRecordatorios'));
 
 module.exports = router;

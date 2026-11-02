@@ -79,6 +79,8 @@ const Estudiante = db.define('Estudiante', {
 
 Estudiante.belongsTo(Usuario, { foreignKey: 'usuarioId', as: 'usuario', onDelete: 'RESTRICT' });
 Usuario.hasOne(Estudiante, { foreignKey: 'usuarioId', as: 'estudiante' });
+Estudiante.belongsTo(Carrera, { foreignKey: 'carreraId', as: 'carrera' });
+Carrera.hasMany(Estudiante, { foreignKey: 'carreraId', as: 'estudiantes' });
 
 
 module.exports = Estudiante;

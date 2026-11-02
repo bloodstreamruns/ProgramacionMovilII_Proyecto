@@ -153,8 +153,47 @@ const obtenerPerfil = async (req, res) => {
   }
 };
 
+// Cambiar la contraseña del usuario autenticado y revocar todas sus sesiones activas
+const cambiarContrasena = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { contrasenaActual, contrasenaNueva } = req.body;
+
+  try {
+    // req.user no incluye la contraseña (Passport la excluye), por eso se consulta de nuevo
+    const usuario = await Usuario.findByPk(req.user.id);
+    const actualValida = usuario?.contrasena
+      && await argon2.verify(usuario.contrasena, contrasenaActual).catch(() => false);
+
+    if (!actualValida) {
+      return res.status(400).json({
+        error: 'La contraseña actual es incorrecta',
+        codigo: 'CONTRASENA_INCORRECTA',
+      });
+    }
+
+    await db.transaction(async (t) => {
+      usuario.contrasena = contrasenaNueva; // el hook beforeSave la hashea
+      await usuario.save({ transaction: t });
+      await Sesion.update(
+        { estado: 'revocada', fechaFin: new Date() },
+        { where: { usuarioId: usuario.id, estado: 'activa' }, transaction: t }
+      );
+    });
+
+    return res.json({ mensaje: 'Contraseña actualizada. Inicie sesión nuevamente' });
+  } catch (error) {
+    console.error('Error al cambiar la contraseña:', error);
+    return res.status(500).json({ error: 'Error interno al cambiar la contraseña' });
+  }
+};
+
 module.exports = {
   iniciarSesion,
   obtenerPerfil,
   cerrarSesion,
+  cambiarContrasena,
 };

@@ -1,6 +1,6 @@
 const Apunte = require('../modelos/apunte');
 const { validationResult } = require('express-validator');
-
+/*hola*/
 // Listar todos los apuntes
 const listarApuntes = async (req, res) => {
   try {

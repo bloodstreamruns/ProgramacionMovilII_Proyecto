@@ -1,5 +1,5 @@
 const {validationResult} = require('express');
-const Matricula = require('../../../src/modelos/matricula');
+const Matricula = require('../modelos/matricula');
 
 const obtenerMatriculas = async (req, res) => {
   try {

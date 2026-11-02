@@ -1,6 +1,6 @@
 require('dotenv').config();
 const argon2 = require('argon2');
-const db = require('../configuraciones/db');
+const db = require('../configuracion/db');
 const Usuario = require('../modelos/usuario');
 require('../modelos/sesion');
 require('../modelos/estudiante');

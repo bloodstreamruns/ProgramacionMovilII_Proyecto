@@ -4,7 +4,7 @@ const fs = require('fs');
 const Estudiante = require('../modelos/estudiante');
 const Carrera = require('../modelos/carreras');
 const Usuario = require('../modelos/usuario');
-const { uploadImagen } = require('../configuraciones/archivos');
+const { uploadImagen } = require('../configuracion/archivos');
 
 const DIRECTORIO_IMAGENES = path.join(__dirname, '../../public/img');
 

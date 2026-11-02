@@ -3,8 +3,8 @@ const express = require('express');
 const morgan = require('morgan');
 const path = require('path');
 const rutas = require('./index');
-const { passport } = require('./configuraciones/passport');
-const swaggerSetup = require('./configuraciones/swaggers');
+const { passport } = require('./configuracion/passport');
+const swaggerSetup = require('./configuracion/swaggers');
 
 const app = express();
 const port = process.env.PORT || 3001;

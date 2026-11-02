@@ -3,7 +3,7 @@ const { body, query } = require('express-validator');
 const { Op } = require('sequelize');
 const controladorUsuarios = require('../controladores/controladorUsuarios');
 const Usuario = require('../modelos/usuario');
-const { autenticar, autorizar } = require('../configuraciones/passport');
+const { autenticar, autorizar } = require('../configuracion/passport');
 const router = Router();
 
 const ROLES = ['administrador', 'estudiante'];

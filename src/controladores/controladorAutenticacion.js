@@ -1,9 +1,9 @@
 const { validationResult } = require('express-validator');
 const argon2 = require('argon2');
-const db = require('../configuraciones/db');
+const db = require('../configuracion/db');
 const Usuario = require('../modelos/usuario');
 const Sesion = require('../modelos/sesion');
-const { getToken } = require('../configuraciones/passport');
+const { getToken } = require('../configuracion/passport');
 const { hashToken, obtenerTokenDeRequest } = require('../utilerias/autenticacion');
 
 // Iniciar sesión con correo/nombre y contraseña o pin

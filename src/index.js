@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { autenticar, autorizar } = require('./configuraciones/passport');
+const { autenticar, autorizar } = require('./configuracion/passport');
 const router = Router();
 
 router.use('/autenticacion', require('./rutas/rutasAutenticacion'));

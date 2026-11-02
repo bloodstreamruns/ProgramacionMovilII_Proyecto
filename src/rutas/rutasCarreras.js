@@ -3,7 +3,7 @@ const { body, query } = require('express-validator');
 const { Op } = require('sequelize');
 const controladorCarreras = require('../controladores/controladorCarreras');
 const Carrera = require('../modelos/carreras');
-const { autenticar, autorizar } = require('../configuraciones/passport');
+const { autenticar, autorizar } = require('../configuracion/passport');
 const router = Router();
 
 const GRADOS = ['Licenciatura', 'Maestría', 'Doctorado'];

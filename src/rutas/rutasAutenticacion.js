@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { body, query } = require('express-validator');
 const controladorAutenticacion = require('../controladores/controladorAutenticacion');
-const { autenticar } = require('../configuraciones/passport');
+const { autenticar } = require('../configuracion/passport');
 
 const router = Router();
 
@@ -108,6 +108,7 @@ router.post('/cerrarsesion',
 );
 
 /**
+ /**
  * @swagger
  * components:
  *   securitySchemes:
@@ -119,25 +120,20 @@ router.post('/cerrarsesion',
  *     CredencialesEntrada:
  *       type: object
  *       required:
- *         - usuario
- *       properties:
- *         usuario:
- *           type: string
- *           description: Correo electrónico o nombre de usuario
- *         contrasena:
- *           type: string
- *         pin:
- *           type: string
- *           description: Alternativa a la contraseña
- *       type: object
- *       required:
  *         - correoElectronico
  *         - contrasena
  *       properties:
  *         correoElectronico:
  *           type: string
+ *           example: usuario@correo.com
  *         contrasena:
  *           type: string
+ *           format: password
+ *           example: 123456
+ *         pin:
+ *           type: string
+ *           example: "1234"
+ *           nullable: true
  *     SesionRespuesta:
  *       type: object
  *       properties:

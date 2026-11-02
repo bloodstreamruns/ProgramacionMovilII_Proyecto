@@ -1,7 +1,7 @@
 const { validationResult } = require('express-validator');
 const argon2 = require('argon2');
 const { Op } = require('sequelize');
-const db = require('../configuraciones/db');
+const db = require('../configuracion/db');
 const Usuario = require('../modelos/usuario');
 const Sesion = require('../modelos/sesion');
 const Estudiante = require('../modelos/estudiante');

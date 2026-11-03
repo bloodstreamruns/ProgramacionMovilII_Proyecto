@@ -1,6 +1,5 @@
 const { validationResult } = require('express-validator');
 const argon2 = require('argon2');
-const db = require('../configuracion/db');
 const Usuario = require('../modelos/usuario');
 const Sesion = require('../modelos/sesion');
 const { getToken } = require('../configuracion/passport');

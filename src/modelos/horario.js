@@ -1,7 +1,7 @@
 const db = require('../configuracion/db');
 const { DataTypes } = require('sequelize');
 
-const periodo = db.define('Periodo', {
+const horario = db.define('Horario', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -10,26 +10,21 @@ const periodo = db.define('Periodo', {
   dias: {
     type: DataTypes.STRING(10),
     allowNull: false,
-    unique: true,
   },
   horas: {
     type: DataTypes.STRING(10),
     allowNull: false,
-    unique: true,
   },
   aulas: {
     type: DataTypes.STRING(20),
     allowNull: false,
-    unique: true,
   },
   asignatura: {
     type: DataTypes.STRING(10),
     allowNull: false,
-    unique: true,
   },
-  
 }, {
-  tableName: 'periodos',
+  tableName: 'horarios',
   timestamps: false, // Desactivar las columnas createdAt y updatedAt
 });
 

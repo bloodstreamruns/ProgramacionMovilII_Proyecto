@@ -18,6 +18,7 @@ const router = Router();
  *   post:
  *     summary: Iniciar sesión y obtener un token JWT
  *     tags: [Autenticación]
+ *     security: []
  *     requestBody:
  *       required: true
  *       content:
@@ -42,22 +43,6 @@ router.post('/iniciarsesion',
   body('contrasena').notEmpty().withMessage('La contraseña es obligatoria'),
   controladorAutenticacion.iniciarSesion
 );
-
-/**
- * @swagger
- * /api/autenticacion/cerrarsesion:
- *   post:
- *     summary: Cerrar la sesión actual
- *     tags: [Autenticación]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Sesión cerrada exitosamente
- *       401:
- *         description: Token inválido o sesión no activa
- */
-router.post('/cerrarsesion', autenticar, controladorAutenticacion.cerrarSesion);
 
 /**
  * @swagger

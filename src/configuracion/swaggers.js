@@ -16,6 +16,11 @@ const options = {
         description: 'Servidor local'
       }
     ],
+    security: [
+      {
+        bearerAuth: []
+      }
+    ],
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -27,7 +32,7 @@ const options = {
     }
   },
   apis: [
-    path.join(__dirname, '../rutas/*.js')
+    path.resolve(__dirname, '../rutas/*.js').replace(/\\/g, '/')
   ]
 };
 

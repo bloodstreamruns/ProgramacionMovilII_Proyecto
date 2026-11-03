@@ -52,6 +52,13 @@ const subirArchivo = multer({
   },
 });
 
+/**
+ * @swagger
+ * tags:
+ *   name: Archivos
+ *   description: Organización y descarga de materiales de estudio
+ */
+
 // Validar asignatura existente
 const validarAsignatura = async (value) => {
   const asignatura = await Asignatura.findByPk(value);
@@ -82,6 +89,22 @@ const validacionesCuerpo = [
 ];
 
 // Listar archivos
+/**
+ * @swagger
+ * /api/archivos:
+ *   get:
+ *     summary: Listar archivos, opcionalmente filtrados por asignatura
+ *     tags: [Archivos]
+ *     parameters:
+ *       - in: query
+ *         name: asignaturaId
+ *         schema:
+ *           type: integer
+ *         required: false
+ *     responses:
+ *       200:
+ *         description: Lista de archivos
+ */
 router.get('/',
   query('asignaturaId').optional().isInt({ min: 1 })
     .withMessage('El ID de la asignatura debe ser un entero válido'),
@@ -89,6 +112,24 @@ router.get('/',
 );
 
 // Consultar archivo por ID
+/**
+ * @swagger
+ * /api/archivos/buscarid:
+ *   get:
+ *     summary: Obtener los datos de un archivo por ID
+ *     tags: [Archivos]
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Archivo encontrado
+ *       404:
+ *         description: Archivo no encontrado
+ */
 router.get('/buscarid',
   query('id').notEmpty().withMessage('El ID del archivo es obligatorio')
     .isInt({ min: 1 }).withMessage('El ID debe ser un entero válido'),
@@ -96,6 +137,29 @@ router.get('/buscarid',
 );
 
 // Descargar archivo
+/**
+ * @swagger
+ * /api/archivos/descargar:
+ *   get:
+ *     summary: Descargar un archivo de estudio
+ *     tags: [Archivos]
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Archivo descargado
+ *         content:
+ *           application/octet-stream:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: Archivo o documento no encontrado
+ */
 router.get('/descargar',
   query('id').notEmpty().withMessage('El ID del archivo es obligatorio')
     .isInt({ min: 1 }).withMessage('El ID debe ser un entero válido'),
@@ -103,6 +167,26 @@ router.get('/descargar',
 );
 
 // Subir archivo
+/**
+ * @swagger
+ * /api/archivos/guardar:
+ *   post:
+ *     summary: Subir un archivo de estudio
+ *     tags: [Archivos]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/ArchivoEntrada'
+ *     responses:
+ *       201:
+ *         description: Archivo subido correctamente
+ *       400:
+ *         description: Datos inválidos o archivo no seleccionado
+ *       404:
+ *         description: Asignatura no encontrada
+ */
 router.post('/guardar',
   subirArchivo.single('archivo'),
   ...validacionesCuerpo,
@@ -110,6 +194,30 @@ router.post('/guardar',
 );
 
 // Reemplazar archivo o actualizar sus datos
+/**
+ * @swagger
+ * /api/archivos/actualizar:
+ *   put:
+ *     summary: Actualizar datos o reemplazar un archivo
+ *     tags: [Archivos]
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             $ref: '#/components/schemas/ArchivoActualizacion'
+ *     responses:
+ *       200:
+ *         description: Archivo actualizado
+ *       404:
+ *         description: Archivo o asignatura no encontrada
+ */
 router.put('/actualizar',
   subirArchivo.single('archivo'),
   query('id').notEmpty().withMessage('El ID del archivo es obligatorio')
@@ -124,10 +232,60 @@ router.put('/actualizar',
 );
 
 // Eliminar archivo
+/**
+ * @swagger
+ * /api/archivos/eliminar:
+ *   delete:
+ *     summary: Eliminar un archivo y su documento almacenado
+ *     tags: [Archivos]
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Archivo eliminado
+ *       404:
+ *         description: Archivo no encontrado
+ */
 router.delete('/eliminar',
   query('id').notEmpty().withMessage('El ID del archivo es obligatorio')
     .isInt({ min: 1 }).withMessage('El ID debe ser un entero válido'),
   controladorArchivos.eliminarArchivo
 );
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     ArchivoEntrada:
+ *       type: object
+ *       required: [archivo, nombre, tipoDocumento, asignaturaId]
+ *       properties:
+ *         archivo:
+ *           type: string
+ *           format: binary
+ *         nombre:
+ *           type: string
+ *         tipoDocumento:
+ *           type: string
+ *           enum: [PDF, Presentación, Guía, Word, Otro]
+ *         asignaturaId:
+ *           type: integer
+ *     ArchivoActualizacion:
+ *       type: object
+ *       properties:
+ *         archivo:
+ *           type: string
+ *           format: binary
+ *         nombre:
+ *           type: string
+ *         tipoDocumento:
+ *           type: string
+ *           enum: [PDF, Presentación, Guía, Word, Otro]
+ *         asignaturaId:
+ *           type: integer
+ */
 module.exports = router;

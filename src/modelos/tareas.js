@@ -14,19 +14,15 @@ const Tareas = db.define('Tareas', {
   prioridad: {
     type: DataTypes.STRING(20),
     allowNull: false,
-    unique: true,
   },
   descripcion: {
-    type: DataTypes.STRING(20),
+    type: DataTypes.TEXT,
     allowNull: false,
-    unique: true,
   },
   estado: {
     type: DataTypes.STRING(20),
     allowNull: false,
-    unique: true,
   },
-  
 }, {
   tableName: 'tareas',
   timestamps: false, // Desactivar las columnas createdAt y updatedAt

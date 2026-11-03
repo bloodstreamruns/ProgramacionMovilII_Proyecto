@@ -10,12 +10,10 @@ const periodo = db.define('Periodo', {
   periodoquecursa: {
     type: DataTypes.STRING(10),
     allowNull: false,
-    unique: true,
   },
   año: {
     type: DataTypes.STRING(100),
     allowNull: false,
-    unique: true,
   },
   fechainicio: {
     type: DataTypes.DATE,

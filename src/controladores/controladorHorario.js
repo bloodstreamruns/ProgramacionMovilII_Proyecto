@@ -1,13 +1,12 @@
 const { validationResult } = require('express-validator');
-const db = require('../configuracion/db');
-const Horarrio = require('../modelos/periodo');
+const Horario = require('../modelos/horario');
 
 
 
 const listarHorarioPorId = async (req, res) => {
     const { id } = req.params;
     try {
-        const horario = await Horarrio.findByPk(id);
+        const horario = await Horario.findByPk(id);
         if (!horario) {
             return res.status(404).json({ mensaje: 'Horario no encontrado' });
         }
@@ -25,7 +24,7 @@ const crearHorario = async (req, res) => {
         return res.status(400).json({ errores: errores.array() });
     }
     try {
-        const nuevoHorario = new Horarrio(req.body);
+        const nuevoHorario = new Horario(req.body);
         const horarioGuardado = await nuevoHorario.save();
         res.status(201).json(horarioGuardado);
     }
@@ -39,7 +38,7 @@ const crearHorario = async (req, res) => {
 };
 const obtenerHorarios = async (req, res) => {
     try {
-        const horarios = await Horarrio.findAll();
+        const horarios = await Horario.findAll();
         res.status(200).json(horarios);
     } catch (error) {
         console.error('Error al obtener los horarios:', error);
@@ -54,7 +53,7 @@ const actualizarHorario = async (req, res) => {
         return res.status(400).json({ errores: errores.array() });
     }
     try {
-        const horario = await Horarrio.findByPk(id);
+        const horario = await Horario.findByPk(id);
         if (!horario) {
             return res.status(404).json({ mensaje: 'Horario no encontrado' });
         }
@@ -70,7 +69,7 @@ const actualizarHorario = async (req, res) => {
 const eliminarHorario = async (req, res) => {
     const { id } = req.params;
     try {
-        const horario = await Horarrio.findByPk(id);
+        const horario = await Horario.findByPk(id);
         if (!horario) {
             return res.status(404).json({ mensaje: 'Horario no encontrado' });
         }
@@ -92,4 +91,3 @@ module.exports = {
     actualizarHorario,
     eliminarHorario
 };
-

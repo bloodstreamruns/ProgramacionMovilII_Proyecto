@@ -40,23 +40,14 @@ const iniciarSesion = async (req, res) => {
 
     let credencialesValidas = false;
 
-    // Verificar contraseña si fue enviada
+    // Verificar contraseña si fue enviada (solo Argon2)
     if (contrasena && usuarioEncontrado.contrasena) {
-      try {
-        credencialesValidas = await argon2.verify(usuarioEncontrado.contrasena, contrasena);
-      } catch (e) {
-        // Fallback si la contraseña estuviera almacenada en texto plano
-        credencialesValidas = usuarioEncontrado.contrasena === contrasena;
-      }
+      credencialesValidas = await argon2.verify(usuarioEncontrado.contrasena, contrasena);
     }
 
-    // Si no fue válida con contraseña o se envió pin, verificar PIN
+    // Si no fue válida con contraseña o se envió pin, verificar PIN (solo Argon2)
     if (!credencialesValidas && pin && usuarioEncontrado.pin) {
-      try {
-        credencialesValidas = await argon2.verify(usuarioEncontrado.pin, pin);
-      } catch (e) {
-        credencialesValidas = usuarioEncontrado.pin === pin;
-      }
+      credencialesValidas = await argon2.verify(usuarioEncontrado.pin, pin);
     }
 
     if (!credencialesValidas) {

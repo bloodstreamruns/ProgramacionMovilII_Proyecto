@@ -1,0 +1,12 @@
+-- Crear la base de datos
+CREATE DATABASE IF NOT EXISTS acadTrackbd
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+-- Crear usuario de la aplicación
+CREATE USER IF NOT EXISTS 'usuario'@'%'
+IDENTIFIED BY '12345';
+
+-- Dar permisos sobre la base
+GRANT ALL PRIVILEGES ON acadTrackbd.* TO 'usuario'@'%';
+FLUSH PRIVILEGES;

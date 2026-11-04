@@ -16,7 +16,7 @@ const Tareas = db.define('Tareas', {
     allowNull: false,
   },
   descripcion: {
-    type: DataTypes.TEXT,
+    type: DataTypes.STRING(255),
     allowNull: false,
   },
   estado: {

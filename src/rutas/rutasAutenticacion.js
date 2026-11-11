@@ -1,9 +1,24 @@
 const { Router } = require('express');
 const { body, query } = require('express-validator');
+const { rateLimit } = require('express-rate-limit');
 const controladorAutenticacion = require('../controladores/controladorAutenticacion');
 const { autenticar } = require('../configuracion/passport');
 
 const router = Router();
+const limitarSolicitudesPin = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 3,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Se alcanzó el límite de solicitudes de PIN. Intente más tarde.' },
+});
+const limitarIniciosSesion = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Se alcanzó el límite de intentos de inicio de sesión. Intente más tarde.' },
+});
 
 /**
  * @swagger
@@ -35,7 +50,9 @@ const router = Router();
  *       400:
  *         description: Error en la solicitud (validación fallida)
  *       401:
- *         description: Credenciales incorrectas o usuario inactivo
+ *         description: Credenciales incorrectas, PIN incorrecto o PIN vencido
+ *       429:
+ *         description: Demasiados intentos de inicio de sesión
  */
 router.post(
   '/iniciarsesion',
@@ -48,7 +65,50 @@ router.post(
     .withMessage('La contraseña debe ser texto')
     .notEmpty()
     .withMessage('La contraseña es obligatoria'),
+  body('pin')
+    .isString()
+    .withMessage('El PIN debe ser texto')
+    .isLength({ min: 6, max: 6 })
+    .withMessage('El PIN debe tener exactamente 6 dígitos')
+    .isNumeric()
+    .withMessage('El PIN debe contener solo números'),
+  limitarIniciosSesion,
   controladorAutenticacion.iniciarSesion
+);
+
+/**
+ * @swagger
+ * /api/autenticacion/solicitarpin:
+ *   post:
+ *     summary: Enviar un PIN por correo para autorizar el acceso a la API
+ *     tags: [Autenticación]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SolicitudPinEntrada'
+ *     responses:
+ *       200:
+ *         description: Instrucción genérica para proteger la existencia de las cuentas
+ *       400:
+ *         description: Usuario o correo no proporcionado
+ *       429:
+ *         description: Demasiadas solicitudes de PIN
+ *       500:
+ *         description: No se pudo enviar el correo
+ */
+router.post(
+  '/solicitarpin',
+  body('usuario')
+    .isString()
+    .withMessage('El correo o nombre de usuario debe ser texto')
+    .trim()
+    .notEmpty()
+    .withMessage('El correo o nombre de usuario es obligatorio'),
+  limitarSolicitudesPin,
+  controladorAutenticacion.enviarPin
 );
 
 /**
@@ -108,6 +168,7 @@ router.post('/cerrarsesion',
  *       required:
  *         - usuario
  *         - contrasena
+ *         - pin
  *       properties:
  *         usuario:
  *           type: string
@@ -117,6 +178,18 @@ router.post('/cerrarsesion',
  *           type: string
  *           format: password
  *           example: MiContrasena123
+ *         pin:
+ *           type: string
+ *           description: PIN de 6 dígitos recibido por correo; vence a los 10 minutos
+ *           example: "123456"
+ *     SolicitudPinEntrada:
+ *       type: object
+ *       required: [usuario]
+ *       properties:
+ *         usuario:
+ *           type: string
+ *           description: Correo registrado o nombre de usuario
+ *           example: usuario@correo.com
  *     SesionRespuesta:
  *       type: object
  *       properties:

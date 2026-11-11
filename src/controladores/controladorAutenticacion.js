@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const argon2 = require('argon2');
+const { randomInt } = require('crypto');
 const Usuario = require('../modelos/usuario');
 const Sesion = require('../modelos/sesion');
 const { getToken } = require('../configuracion/passport');
@@ -13,7 +14,7 @@ const iniciarSesion = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { usuario: identificador, contrasena } = req.body;
+  const { usuario: identificador, contrasena, pin } = req.body;
 
   try {
     // Buscar usuario por correo electrónico o por nombre
@@ -54,11 +55,24 @@ const iniciarSesion = async (req, res) => {
       });
     }
 
-    // Reiniciar intentos fallidos al tener éxito
-    if (usuarioEncontrado.intentosFallidos > 0) {
-      usuarioEncontrado.intentosFallidos = 0;
-      await usuarioEncontrado.save();
+    const pinValido = usuarioEncontrado.pinAutenticacion
+      && usuarioEncontrado.pinAutenticacionExpira
+      && usuarioEncontrado.pinAutenticacionExpira > new Date()
+      && await argon2.verify(usuarioEncontrado.pinAutenticacion, pin);
+
+    if (!pinValido) {
+      return res.status(401).json({
+        error: 'El PIN es incorrecto o ha expirado. Solicite uno nuevo.',
+        codigo: 'PIN_INVALIDO_O_EXPIRADO',
+      });
     }
+
+    usuarioEncontrado.pinAutenticacion = null;
+    usuarioEncontrado.pinAutenticacionExpira = null;
+
+    // Reiniciar intentos fallidos al tener éxito
+    usuarioEncontrado.intentosFallidos = 0;
+    await usuarioEncontrado.save();
 
     // Generar token JWT con Passport/jsonwebtoken
     const payload = {
@@ -160,7 +174,7 @@ const obtenerPerfil = async (req, res) => {
   }
 };
 
-// Enviar un PIN temporal al usuario
+// Enviar un PIN temporal al correo registrado del usuario
 const enviarPin = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -177,29 +191,42 @@ const enviarPin = async (req, res) => {
     });
 
     if (!usuarioEncontrado) {
-      return res.status(404).json({
-        error: 'Usuario no encontrado',
-        codigo: 'USUARIO_NO_ENCONTRADO',
+      return res.json({
+        mensaje: 'Si la cuenta existe y está activa, recibirá un PIN en su correo registrado.',
       });
     }
 
-    // Generar PIN temporal de 6 dígitos
-    const pinTemporal = Math.floor(100000 + Math.random() * 900000).toString();
+    if (usuarioEncontrado.estado === false || usuarioEncontrado.estado === 0) {
+      return res.json({
+        mensaje: 'Si la cuenta existe y está activa, recibirá un PIN en su correo registrado.',
+      });
+    }
 
-    // Guardar el hash del PIN temporal en la base de datos
-    usuarioEncontrado.pin = await argon2.hash(pinTemporal);
+    // Generar un PIN de un solo uso que vence en diez minutos.
+    const pinTemporal = randomInt(100000, 1000000).toString();
+    usuarioEncontrado.pinAutenticacion = await argon2.hash(pinTemporal);
+    usuarioEncontrado.pinAutenticacionExpira = new Date(Date.now() + 10 * 60 * 1000);
     await usuarioEncontrado.save();
 
-    // Enviar el PIN por correo electrónico esperando la promesa
-    await enviarCorreo(
-      usuarioEncontrado.correoElectronico,
-      'Su PIN temporal de autenticación',
-      `Hola ${usuarioEncontrado.nombre},\n\nSu PIN temporal es: ${pinTemporal}\n\nEste PIN le permitirá restablecer su contraseña.`
-    );
+    try {
+      await enviarCorreo(
+        usuarioEncontrado.correoElectronico,
+        'PIN para autorizar el acceso a la API',
+        `Hola ${usuarioEncontrado.nombre},\n\nSu PIN de acceso es: ${pinTemporal}\n\nVence en 10 minutos y solo puede usarse una vez. Si no solicitó este código, ignore este correo.`
+      );
+    } catch (error) {
+      usuarioEncontrado.pinAutenticacion = null;
+      usuarioEncontrado.pinAutenticacionExpira = null;
+      try {
+        await usuarioEncontrado.save();
+      } catch (invalidacionError) {
+        console.error('No se pudo invalidar el PIN que no fue enviado:', invalidacionError);
+      }
+      throw error;
+    }
 
     return res.json({
-      mensaje: 'PIN temporal enviado correctamente',
-      instrucciones: 'Revise su correo electrónico para obtener el PIN',
+      mensaje: 'Si la cuenta existe y está activa, recibirá un PIN en su correo registrado.',
     });
   } catch (error) {
     console.error('Error al enviar PIN:', error);

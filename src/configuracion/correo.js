@@ -34,6 +34,7 @@ const enviarCorreo = async (destinatario, asunto, mensaje) => {
     console.log('Correo enviado exitosamente a:', destinatario);
   } catch (error) {
     console.error('Error al enviar el correo:', error);
+    throw error;
   }
 };
 

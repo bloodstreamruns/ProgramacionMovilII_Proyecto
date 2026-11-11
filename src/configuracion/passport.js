@@ -32,7 +32,9 @@ passport.use(new JwtStrategy(
       if (!sesion) return done(null, false, { message: 'Sesión cerrada o no registrada. Inicie sesión nuevamente' });
 
       const usuario = await Usuario.findByPk(payload.id, {
-        attributes: { exclude: ['contrasena', 'pin'] },
+        attributes: {
+          exclude: ['contrasena', 'pin', 'pinAutenticacion', 'pinAutenticacionExpira'],
+        },
       });
 
       if (!usuario || !usuario.estado) return done(null, false, { message: 'Usuario no encontrado o inactivo' });

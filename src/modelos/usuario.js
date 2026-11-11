@@ -41,6 +41,14 @@ const Usuario = db.define('Usuario', {
     allowNull: false,
     defaultValue: 0,
   },
+  pinAutenticacion: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  pinAutenticacionExpira: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
 }, {
   tableName: 'usuarios',
   timestamps: false,
@@ -60,6 +68,8 @@ Usuario.prototype.toJSON = function () {
   const datos = { ...this.get() };
   delete datos.contrasena;
   delete datos.pin;
+  delete datos.pinAutenticacion;
+  delete datos.pinAutenticacionExpira;
   return datos;
 };
 

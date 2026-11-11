@@ -23,11 +23,6 @@ const periodo = db.define('Periodo', {
     type: DataTypes.DATE,
     allowNull: true,
   },
-  estado: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: true,
-  },
 }, {
   tableName: 'periodos',
   timestamps: false, // Desactivar las columnas createdAt y updatedAt

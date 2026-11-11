@@ -138,8 +138,5 @@ router.delete('/periodo/:id', controladorPeriodo.eliminarPeriodo);
  *           type: string
  *           format: date-time
  *           nullable: true
- *         estado:
- *           type: boolean
  */
 module.exports = router;
-

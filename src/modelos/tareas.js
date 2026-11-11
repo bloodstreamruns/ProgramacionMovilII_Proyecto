@@ -19,10 +19,6 @@ const Tareas = db.define('Tareas', {
     type: DataTypes.STRING(255),
     allowNull: false,
   },
-  estado: {
-    type: DataTypes.STRING(20),
-    allowNull: false,
-  },
 }, {
   tableName: 'tareas',
   timestamps: false, // Desactivar las columnas createdAt y updatedAt

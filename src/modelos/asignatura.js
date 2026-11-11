@@ -47,19 +47,4 @@ const Asignatura = db.define('Asignatura', {
 Asignatura.belongsTo(Carrera, { foreignKey: 'carreraId', as: 'carrera' });
 Carrera.hasMany(Asignatura, { foreignKey: 'carreraId', as: 'asignaturas' });
 
-Asignatura.belongsToMany(Asignatura, {
-  through: 'asignaturas_requisitos',
-  as: 'requisitos',
-  foreignKey: 'asignaturaId',
-  otherKey: 'requisitoId',
-  timestamps: false,
-});
-Asignatura.belongsToMany(Asignatura, {
-  through: 'asignaturas_requisitos',
-  as: 'requeridaPor',
-  foreignKey: 'requisitoId',
-  otherKey: 'asignaturaId',
-  timestamps: false,
-});
-
 module.exports = Asignatura;

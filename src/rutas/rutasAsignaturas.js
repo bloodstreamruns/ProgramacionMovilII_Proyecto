@@ -24,8 +24,6 @@ const validacionesCuerpo = [
   body('carreraId').notEmpty().withMessage('El ID de la carrera es obligatorio')
     .isInt().withMessage('El ID de la carrera debe ser un número entero')
     .custom(validarCarreraExistente),
-  body('requisitos').optional().isArray().withMessage('Los requisitos deben ser un arreglo de IDs'),
-  body('requisitos.*').isInt({ min: 1 }).withMessage('Cada requisito debe ser un ID entero válido'),
 ];
 
 /**
@@ -50,6 +48,8 @@ const validacionesCuerpo = [
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Asignatura'
+ *       401:
+ *         description: Debe iniciar sesión y enviar un token JWT válido
  */
 router.get('/',
   query('carreraId').optional().isInt().withMessage('El ID de la carrera debe ser un número entero'),
@@ -78,6 +78,8 @@ router.get('/',
  *               $ref: '#/components/schemas/Asignatura'
  *       404:
  *         description: Asignatura no encontrada
+ *       401:
+ *         description: Debe iniciar sesión y enviar un token JWT válido
  */
 router.get('/buscarid',
   query('id').notEmpty().withMessage('El ID de la asignatura es obligatorio')
@@ -106,6 +108,8 @@ router.get('/buscarid',
  *               $ref: '#/components/schemas/Asignatura'
  *       400:
  *         description: Error en la solicitud (validación fallida)
+ *       401:
+ *         description: Debe iniciar sesión y enviar un token JWT válido
  */
 router.post('/guardar',
   body('codigo').notEmpty().withMessage('El código de la asignatura es obligatorio')
@@ -125,7 +129,7 @@ router.post('/guardar',
  * @swagger
  * /api/asignaturas/actualizar:
  *   put:
- *     summary: Actualizar una asignatura existente (reemplaza también sus requisitos)
+ *     summary: Actualizar una asignatura existente
  *     tags: [Asignaturas]
  *     parameters:
  *       - in: query
@@ -151,8 +155,8 @@ router.post('/guardar',
  *         description: Error en la solicitud (validación fallida)
  *       404:
  *         description: Asignatura no encontrada
- *       409:
- *         description: Conflicto con otras asignaturas que dependen de esta
+ *       401:
+ *         description: Debe iniciar sesión y enviar un token JWT válido
  */
 router.put('/actualizar',
   query('id').notEmpty().withMessage('El ID de la asignatura es obligatorio')
@@ -192,8 +196,8 @@ router.put('/actualizar',
  *         description: Asignatura eliminada exitosamente
  *       404:
  *         description: Asignatura no encontrada
- *       409:
- *         description: La asignatura es requisito de otras asignaturas
+ *       401:
+ *         description: Debe iniciar sesión y enviar un token JWT válido
  */
 router.delete('/eliminar',
   query('id').notEmpty().withMessage('El ID de la asignatura es obligatorio')
@@ -231,11 +235,6 @@ router.delete('/eliminar',
  *         carreraId:
  *           type: integer
  *           description: ID de la carrera a la que pertenece
- *         requisitos:
- *           type: array
- *           items:
- *             type: integer
- *           description: IDs de las asignaturas que deben aprobarse previamente
  *     Asignatura:
  *       type: object
  *       properties:
@@ -262,16 +261,5 @@ router.delete('/eliminar',
  *               type: string
  *             nombre:
  *               type: string
- *         requisitos:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               id:
- *                 type: integer
- *               codigo:
- *                 type: string
- *               nombre:
- *                 type: string
  */
 module.exports = router;

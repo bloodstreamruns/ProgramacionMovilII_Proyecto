@@ -34,7 +34,6 @@ router.post('/tareas', [
     body('prioridad').notEmpty().withMessage('El campo prioridad es obligatorio'),
     body('descripcion').notEmpty().withMessage('El campo descripcion es obligatorio')
         .isString().withMessage('El campo descripcion debe ser texto'),
-    body('estado').notEmpty().withMessage('El campo estado es obligatorio'),
 ], controladorTareas.crearTarea);
 
 /**
@@ -99,7 +98,6 @@ router.put('/tareas/:id', [
     body('prioridad').notEmpty().withMessage('El campo prioridad es obligatorio'),
     body('descripcion').notEmpty().withMessage('El campo descripcion es obligatorio')
         .isString().withMessage('El campo descripcion debe ser texto'),
-    body('estado').notEmpty().withMessage('El campo estado es obligatorio'),
 ], controladorTareas.actualizarTarea);
 
 /**
@@ -128,7 +126,7 @@ router.delete('/tareas/:id', controladorTareas.eliminarTarea);
  *   schemas:
  *     TareaEntrada:
  *       type: object
- *       required: [fechaEntrega, prioridad, descripcion, estado]
+ *       required: [fechaEntrega, prioridad, descripcion]
  *       properties:
  *         fechaEntrega:
  *           type: string
@@ -136,8 +134,6 @@ router.delete('/tareas/:id', controladorTareas.eliminarTarea);
  *         prioridad:
  *           type: string
  *         descripcion:
- *           type: string
- *         estado:
  *           type: string
  */
 module.exports = router;

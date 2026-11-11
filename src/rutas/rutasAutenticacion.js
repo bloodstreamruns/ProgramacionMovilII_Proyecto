@@ -37,10 +37,29 @@ const router = Router();
  *       401:
  *         description: Credenciales incorrectas o usuario inactivo
  */
-router.post('/iniciarsesion',
-  body('correoElectronico').notEmpty().withMessage('El correo electrónico es obligatorio')
-    .isEmail().withMessage('El correo electrónico debe ser un correo válido'),
-  body('contrasena').notEmpty().withMessage('La contraseña es obligatoria'),
+router.post(
+  '/iniciarsesion',
+  body('usuario')
+    .trim()
+    .notEmpty()
+    .withMessage('El correo electrónico o nombre de usuario es obligatorio')
+    .bail()
+    .custom((_, { req }) => {
+      const { contrasena, pin } = req.body || {};
+      const tieneCredencial = [contrasena, pin].some(
+        (valor) => typeof valor === 'string' && valor.length > 0
+      );
+
+      if (!tieneCredencial) {
+        throw new Error('Debe proporcionar una contraseña o un PIN');
+      }
+
+      return true;
+    }),
+  body('contrasena').optional().isString()
+    .withMessage('La contraseña debe ser texto'),
+  body('pin').optional().isString()
+    .withMessage('El PIN debe ser texto'),
   controladorAutenticacion.iniciarSesion
 );
 
@@ -105,20 +124,21 @@ router.post('/cerrarsesion',
  *     CredencialesEntrada:
  *       type: object
  *       required:
- *         - correoElectronico
- *         - contrasena
+ *         - usuario
  *       properties:
- *         correoElectronico:
+ *         usuario:
  *           type: string
+ *           description: Correo electrónico o nombre de usuario
  *           example: usuario@correo.com
  *         contrasena:
  *           type: string
  *           format: password
- *           example: 123456
+ *           description: Envíe contraseña o PIN
+ *           example: "123456"
  *         pin:
  *           type: string
+ *           description: Envíe contraseña o PIN
  *           example: "1234"
- *           nullable: true
  *     SesionRespuesta:
  *       type: object
  *       properties:

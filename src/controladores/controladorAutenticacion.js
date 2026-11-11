@@ -6,14 +6,14 @@ const { getToken } = require('../configuracion/passport');
 const { hashToken, obtenerTokenDeRequest } = require('../utilerias/autenticacion');
 const { enviarCorreo } = require('../configuracion/correo');
 
-// Iniciar sesión con correo/nombre y contraseña o pin
+// Iniciar sesión con correo/nombre y contraseña
 const iniciarSesion = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { usuario: identificador, contrasena, pin } = req.body;
+  const { usuario: identificador, contrasena } = req.body;
 
   try {
     // Buscar usuario por correo electrónico o por nombre
@@ -38,26 +38,10 @@ const iniciarSesion = async (req, res) => {
       });
     }
 
-    let credencialesValidas = false;
-
-    // Verificar contraseña si fue enviada
-    if (contrasena && usuarioEncontrado.contrasena) {
-      try {
-        credencialesValidas = await argon2.verify(usuarioEncontrado.contrasena, contrasena);
-      } catch (e) {
-        // Fallback si la contraseña estuviera almacenada en texto plano
-        credencialesValidas = usuarioEncontrado.contrasena === contrasena;
-      }
-    }
-
-    // Si no fue válida con contraseña o se envió pin, verificar PIN
-    if (!credencialesValidas && pin && usuarioEncontrado.pin) {
-      try {
-        credencialesValidas = await argon2.verify(usuarioEncontrado.pin, pin);
-      } catch (e) {
-        credencialesValidas = usuarioEncontrado.pin === pin;
-      }
-    }
+    const credencialesValidas = await argon2.verify(
+      usuarioEncontrado.contrasena,
+      contrasena
+    );
 
     if (!credencialesValidas) {
       // Incrementar intentos fallidos
@@ -120,7 +104,7 @@ const cerrarSesion = async (req, res) => {
   try {
     const esTodas = req.query.todas === 'true';
     const where = { usuarioId: req.user.id, estado: 'activa' };
-    
+
     if (!esTodas) {
       where.token = hashToken(obtenerTokenDeRequest(req));
     }
@@ -210,7 +194,7 @@ const enviarPin = async (req, res) => {
     await enviarCorreo(
       usuarioEncontrado.correoElectronico,
       'Su PIN temporal de autenticación',
-      `Hola ${usuarioEncontrado.nombre},\n\nSu PIN temporal es: ${pinTemporal}\n\nEste PIN le permitirá iniciar sesión o restablecer su clave.`
+      `Hola ${usuarioEncontrado.nombre},\n\nSu PIN temporal es: ${pinTemporal}\n\nEste PIN le permitirá restablecer su contraseña.`
     );
 
     return res.json({

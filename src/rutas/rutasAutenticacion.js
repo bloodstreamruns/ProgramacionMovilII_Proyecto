@@ -42,24 +42,12 @@ router.post(
   body('usuario')
     .trim()
     .notEmpty()
-    .withMessage('El correo electrónico o nombre de usuario es obligatorio')
-    .bail()
-    .custom((_, { req }) => {
-      const { contrasena, pin } = req.body || {};
-      const tieneCredencial = [contrasena, pin].some(
-        (valor) => typeof valor === 'string' && valor.length > 0
-      );
-
-      if (!tieneCredencial) {
-        throw new Error('Debe proporcionar una contraseña o un PIN');
-      }
-
-      return true;
-    }),
-  body('contrasena').optional().isString()
-    .withMessage('La contraseña debe ser texto'),
-  body('pin').optional().isString()
-    .withMessage('El PIN debe ser texto'),
+    .withMessage('El correo electrónico o nombre de usuario es obligatorio'),
+  body('contrasena')
+    .isString()
+    .withMessage('La contraseña debe ser texto')
+    .notEmpty()
+    .withMessage('La contraseña es obligatoria'),
   controladorAutenticacion.iniciarSesion
 );
 
@@ -125,16 +113,15 @@ router.post('/cerrarsesion',
  *       type: object
  *       required:
  *         - usuario
+ *         - contrasena
  *       properties:
  *         usuario:
  *           type: string
- *           description: Correo electrónico o nombre de usuario
- *           example: usuario@correo.com
- *         contrasena:
+ *            description: Correo electrónico o nombre de usuario
+ *                example: usuario@correo.com
+ *          contrasena:
  *           type: string
  *           format: password
- *           description: Envíe contraseña o PIN
- *           example: "123456"
  *         pin:
  *           type: string
  *           description: Envíe contraseña o PIN

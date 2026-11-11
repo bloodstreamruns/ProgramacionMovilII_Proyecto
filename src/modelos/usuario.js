@@ -25,10 +25,7 @@ const Usuario = db.define('Usuario', {
     type: DataTypes.STRING(255),
     allowNull: false,
   },
-  pin: {
-    type: DataTypes.STRING(255),
-    allowNull: true,
-  },
+  
   rol: {
     type: DataTypes.ENUM('administrador', 'estudiante'),
     allowNull: false,

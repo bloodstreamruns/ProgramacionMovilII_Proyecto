@@ -1,21 +1,47 @@
 require('dotenv').config();
-const argon2 = require('argon2');
 const db = require('../configuracion/db');
 const Usuario = require('../modelos/usuario');
-require('../modelos/sesion');
+const Sesion = require('../modelos/sesion');
 require('../modelos/estudiante');
 
-const { ADMIN_NOMBRE, ADMIN_CORREO, ADMIN_CONTRASENA, ADMIN_PIN } = process.env;
+const {
+  ADMIN_NOMBRE,
+  ADMIN_CORREO,
+  ADMIN_CONTRASENA,
+  ADMIN_REINICIAR_CREDENCIALES,
+} = process.env;
 
 const crearAdministrador = async () => {
-  if (!ADMIN_NOMBRE || !ADMIN_CORREO || !ADMIN_CONTRASENA || !ADMIN_PIN) {
-    throw new Error('Defina ADMIN_NOMBRE, ADMIN_CORREO, ADMIN_CONTRASENA y ADMIN_PIN en el archivo .env');
+  if (!ADMIN_NOMBRE || !ADMIN_CORREO || !ADMIN_CONTRASENA) {
+    throw new Error('Defina ADMIN_NOMBRE, ADMIN_CORREO y ADMIN_CONTRASENA en el archivo .env');
   }
 
   await db.authenticate();
 
   const existente = await Usuario.findOne({ where: { rol: 'administrador' } });
   if (existente) {
+    if (ADMIN_REINICIAR_CREDENCIALES === 'true') {
+      const administrador = await Usuario.findOne({
+        where: { correoElectronico: ADMIN_CORREO, rol: 'administrador' },
+      });
+      if (!administrador) {
+        throw new Error('No se encontró un administrador con ADMIN_CORREO; no se modificó ninguna cuenta');
+      }
+
+      await db.transaction(async (transaction) => {
+        await administrador.update({
+          contrasena: ADMIN_CONTRASENA,
+          intentosFallidos: 0,
+        }, { transaction });
+        await Sesion.update(
+          { estado: 'revocada', fechaFin: new Date() },
+          { where: { usuarioId: administrador.id, estado: 'activa' }, transaction }
+        );
+      });
+      console.log(`Credenciales restablecidas para: ${administrador.correoElectronico}`);
+      return;
+    }
+
     console.log(`Ya existe un administrador: ${existente.nombre}`);
     return;
   }
@@ -23,8 +49,7 @@ const crearAdministrador = async () => {
   await Usuario.create({
     nombre: ADMIN_NOMBRE,
     correoElectronico: ADMIN_CORREO,
-    contrasena: await argon2.hash(ADMIN_CONTRASENA),
-    pin: await argon2.hash(ADMIN_PIN),
+    contrasena: ADMIN_CONTRASENA,
     rol: 'administrador',
   });
   console.log('Administrador creado correctamente');

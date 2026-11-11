@@ -100,14 +100,8 @@ router.post('/cerrarsesion',
 );
 
 /**
- /**
  * @swagger
  * components:
- *   securitySchemes:
- *     bearerAuth:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
  *   schemas:
  *     CredencialesEntrada:
  *       type: object
@@ -117,21 +111,32 @@ router.post('/cerrarsesion',
  *       properties:
  *         usuario:
  *           type: string
- *            description: Correo electrónico o nombre de usuario
- *                example: usuario@correo.com
- *          contrasena:
+ *           description: Correo electrónico o nombre de usuario
+ *           example: usuario@correo.com
+ *         contrasena:
  *           type: string
  *           format: password
- *         pin:
- *           type: string
- *           description: Envíe contraseña o PIN
- *           example: "1234"
+ *           example: MiContrasena123
  *     SesionRespuesta:
  *       type: object
  *       properties:
+ *         mensaje:
+ *           type: string
+ *           example: Inicio de sesión exitoso
  *         token:
  *           type: string
+ *           description: Token JWT para autorizar rutas protegidas
  *         usuario:
- *           $ref: '#/components/schemas/Usuario'
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: integer
+ *             nombre:
+ *               type: string
+ *             correoElectronico:
+ *               type: string
+ *             rol:
+ *               type: string
+ *               enum: [administrador, estudiante]
  */
 module.exports = router;

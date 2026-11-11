@@ -75,18 +75,13 @@ const crearUsuario = async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { nombre, correoElectronico, contrasena, pin, rol, estado = true } = req.body;
+  const { nombre, correoElectronico, contrasena, rol, estado = true } = req.body;
 
   try {
-    const [hashContrasena, hashPin] = await Promise.all([
-      argon2.hash(contrasena),
-      argon2.hash(pin),
-    ]);
     const nuevo = await Usuario.create({
       nombre,
       correoElectronico,
-      contrasena: hashContrasena,
-      pin: hashPin,
+      contrasena,
       rol,
       estado,
     });

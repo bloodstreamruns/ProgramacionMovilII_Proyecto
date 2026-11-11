@@ -29,12 +29,13 @@ const validacionesCuerpo = [
     .isEmail().withMessage('El correo electrónico debe ser un correo válido')
     .isLength({ max: 100 }).withMessage('El correo electrónico debe tener un máximo de 100 caracteres')
     .custom(campoUnico('correoElectronico', 'El correo electrónico del usuario ya está en uso')),
-  body('pin').optional({ nullable: true })
-    .isNumeric({ no_symbols: true }).withMessage('El PIN debe contener solo dígitos')
-    .isLength({ min: 4, max: 6 }).withMessage('El PIN debe tener entre 4 y 6 dígitos'),
   body('rol').notEmpty().withMessage('El rol del usuario es obligatorio')
     .isIn(ROLES).withMessage(`El rol debe ser uno de: ${ROLES.join(', ')}`),
 ];
+
+const validarPin = body('pin').optional({ nullable: true })
+  .isNumeric({ no_symbols: true }).withMessage('El PIN debe contener solo dígitos')
+  .isLength({ min: 4, max: 6 }).withMessage('El PIN debe tener entre 4 y 6 dígitos');
 
 const validarContrasena = (obligatoria) => {
   const campo = body('contrasena');
@@ -128,7 +129,7 @@ router.get('/buscarid', validarId, controladorUsuarios.obtenerUsuarioPorId);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UsuarioEntrada'
+ *             $ref: '#/components/schemas/UsuarioCrearEntrada'
  *     responses:
  *       201:
  *         description: Usuario creado exitosamente
@@ -181,6 +182,7 @@ router.post('/guardar',
 router.put('/actualizar',
   validarId,
   ...validacionesCuerpo,
+  validarPin,
   validarContrasena(false),
   body('estado').notEmpty().withMessage('El estado del usuario es obligatorio')
     .isBoolean().withMessage('El estado del usuario debe ser un valor booleano'),
@@ -213,6 +215,27 @@ router.delete('/eliminar', validarId, controladorUsuarios.eliminarUsuario);
  * @swagger
  * components:
  *   schemas:
+ *     UsuarioCrearEntrada:
+ *       type: object
+ *       required:
+ *         - nombre
+ *         - correoElectronico
+ *         - contrasena
+ *         - rol
+ *       properties:
+ *         nombre:
+ *           type: string
+ *         correoElectronico:
+ *           type: string
+ *         contrasena:
+ *           type: string
+ *           minLength: 8
+ *           maxLength: 100
+ *         rol:
+ *           type: string
+ *           enum: [administrador, estudiante]
+ *         estado:
+ *           type: boolean
  *     UsuarioEntrada:
  *       type: object
  *       required:
@@ -227,11 +250,12 @@ router.delete('/eliminar', validarId, controladorUsuarios.eliminarUsuario);
  *         contrasena:
  *           type: string
  *           minLength: 8
- *           description: Obligatoria al crear. Si se omite al actualizar, se conserva la actual
+ *           maxLength: 100
+ *           description: Si se omite al actualizar, se conserva la actual
  *         pin:
  *           type: string
  *           nullable: true
- *           description: Entre 4 y 6 dígitos
+ *           description: Entre 4 y 6 dígitos; solo se puede cambiar al actualizar
  *         rol:
  *           type: string
  *           enum: [administrador, estudiante]

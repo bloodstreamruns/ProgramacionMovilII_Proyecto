@@ -1,9 +1,8 @@
-
 const { Router } = require('express');
 const controladorApuntes = require('../controladores/controladorApuntes');
 const Asignatura = require('../modelos/asignatura');
 const { body, query } = require('express-validator');
-//hola/*hola
+//hola/*hola//hola
 const router = Router();
 
 // Validar que la asignatura exista

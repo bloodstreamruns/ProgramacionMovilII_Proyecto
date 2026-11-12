@@ -29,10 +29,14 @@ const router = Router();
  *         description: Datos inválidos
  */
 router.post('/periodo', [
-    body('periodoquecursa').notEmpty().withMessage('El campo periodoquecursa es obligatorio'),
+    body('periodoquecursa').notEmpty().withMessage('El campo periodoquecursa es obligatorio')
+        .isLength({ max: 50 }).withMessage('El campo periodoquecursa no debe superar 50 caracteres'),
     body('año').notEmpty().withMessage('El campo año es obligatorio'),
     body('fechainicio').optional().isDate().withMessage('El campo fechainicio debe ser una fecha válida'),
     body('fechafin').optional().isDate().withMessage('El campo fechafin debe ser una fecha válida'),
+    body('estado').optional()
+        .isString().withMessage('El campo estado debe ser texto')
+        .isLength({ min: 1, max: 20 }).withMessage('El campo estado debe tener entre 1 y 20 caracteres'),
 ], controladorPeriodo.crearPeriodo);
 
 /**
@@ -92,10 +96,14 @@ router.get('/periodo/:id', controladorPeriodo.listarPeriodoPorId);
  *         description: Período no encontrado
  */
 router.put('/periodo/:id', [
-    body('periodoquecursa').notEmpty().withMessage('El campo periodoquecursa es obligatorio'),
+    body('periodoquecursa').notEmpty().withMessage('El campo periodoquecursa es obligatorio')
+        .isLength({ max: 50 }).withMessage('El campo periodoquecursa no debe superar 50 caracteres'),
     body('año').notEmpty().withMessage('El campo año es obligatorio'),
     body('fechainicio').optional().isDate().withMessage('El campo fechainicio debe ser una fecha válida'),
     body('fechafin').optional().isDate().withMessage('El campo fechafin debe ser una fecha válida'),
+    body('estado').optional()
+        .isString().withMessage('El campo estado debe ser texto')
+        .isLength({ min: 1, max: 20 }).withMessage('El campo estado debe tener entre 1 y 20 caracteres'),
 ], controladorPeriodo.actualizarPeriodo);
 
 /**
@@ -128,6 +136,7 @@ router.delete('/periodo/:id', controladorPeriodo.eliminarPeriodo);
  *       properties:
  *         periodoquecursa:
  *           type: string
+ *           maxLength: 50
  *         año:
  *           type: string
  *         fechainicio:
@@ -138,5 +147,9 @@ router.delete('/periodo/:id', controladorPeriodo.eliminarPeriodo);
  *           type: string
  *           format: date-time
  *           nullable: true
+ *         estado:
+ *           type: string
+ *           description: Estado del período. Si se omite al crear, se asigna Activo.
+ *           example: Activo
  */
 module.exports = router;

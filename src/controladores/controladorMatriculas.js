@@ -56,7 +56,7 @@ const crearMatricula = async (req, res) => {
 
     return res.status(201).json({
       mensaje: 'Matrícula creada correctamente',
-      matricula: nuevaMatricula,
+      matricula: nuevamatricula,
     });
   } catch (error) {
     return res.status(500).json({

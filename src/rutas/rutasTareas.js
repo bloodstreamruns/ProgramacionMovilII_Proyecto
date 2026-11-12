@@ -34,6 +34,9 @@ router.post('/tareas', [
     body('prioridad').notEmpty().withMessage('El campo prioridad es obligatorio'),
     body('descripcion').notEmpty().withMessage('El campo descripcion es obligatorio')
         .isString().withMessage('El campo descripcion debe ser texto'),
+    body('estado').optional()
+        .isString().withMessage('El campo estado debe ser texto')
+        .isLength({ min: 1, max: 20 }).withMessage('El campo estado debe tener entre 1 y 20 caracteres'),
 ], controladorTareas.crearTarea);
 
 /**
@@ -98,6 +101,9 @@ router.put('/tareas/:id', [
     body('prioridad').notEmpty().withMessage('El campo prioridad es obligatorio'),
     body('descripcion').notEmpty().withMessage('El campo descripcion es obligatorio')
         .isString().withMessage('El campo descripcion debe ser texto'),
+    body('estado').optional()
+        .isString().withMessage('El campo estado debe ser texto')
+        .isLength({ min: 1, max: 20 }).withMessage('El campo estado debe tener entre 1 y 20 caracteres'),
 ], controladorTareas.actualizarTarea);
 
 /**
@@ -135,5 +141,9 @@ router.delete('/tareas/:id', controladorTareas.eliminarTarea);
  *           type: string
  *         descripcion:
  *           type: string
+ *         estado:
+ *           type: string
+ *           description: Estado de la tarea. Si se omite al crear, se asigna Pendiente.
+ *           example: Pendiente
  */
 module.exports = router;

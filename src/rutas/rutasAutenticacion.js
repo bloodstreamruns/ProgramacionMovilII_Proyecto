@@ -31,7 +31,7 @@ const limitarIniciosSesion = rateLimit({
  * @swagger
  * /api/autenticacion/iniciarsesion:
  *   post:
- *     summary: Iniciar sesión y obtener un token JWT
+ *     summary: 2. Iniciar sesión con el PIN y obtener un token JWT
  *     tags: [Autenticación]
  *     security: []
  *     requestBody:
@@ -50,7 +50,7 @@ const limitarIniciosSesion = rateLimit({
  *       400:
  *         description: Error en la solicitud (validación fallida)
  *       401:
- *         description: Credenciales incorrectas, PIN incorrecto o PIN vencido
+ *         description: Credenciales incorrectas, PIN incorrecto o PIN ya utilizado
  *       429:
  *         description: Demasiados intentos de inicio de sesión
  */
@@ -80,7 +80,7 @@ router.post(
  * @swagger
  * /api/autenticacion/solicitarpin:
  *   post:
- *     summary: Enviar un PIN por correo para autorizar el acceso a la API
+ *     summary: 1. Solicitar por correo un PIN para autorizar el acceso a la API
  *     tags: [Autenticación]
  *     security: []
  *     requestBody:
@@ -115,7 +115,7 @@ router.post(
  * @swagger
  * /api/autenticacion/perfil:
  *   get:
- *     summary: Obtener los datos del usuario autenticado
+ *     summary: 3. Obtener los datos del usuario autenticado
  *     tags: [Autenticación]
  *     security:
  *       - bearerAuth: []
@@ -135,7 +135,7 @@ router.get('/perfil', autenticar, controladorAutenticacion.obtenerPerfil);
  * @swagger
  * /api/autenticacion/cerrarsesion:
  *   post:
- *     summary: Cerrar la sesión actual o todas las sesiones del usuario
+ *     summary: 4. Cerrar la sesión actual o todas las sesiones del usuario
  *     tags: [Autenticación]
  *     security:
  *       - bearerAuth: []
@@ -180,7 +180,7 @@ router.post('/cerrarsesion',
  *           example: MiContrasena123
  *         pin:
  *           type: string
- *           description: PIN de 6 dígitos recibido por correo; vence a los 10 minutos
+ *           description: PIN de 6 dígitos recibido por correo; válido hasta su uso o hasta solicitar otro
  *           example: "123456"
  *     SolicitudPinEntrada:
  *       type: object

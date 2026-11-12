@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
 const argon2 = require('argon2');
 const { randomInt } = require('crypto');
+const db = require('../configuracion/db');
 const Usuario = require('../modelos/usuario');
 const Sesion = require('../modelos/sesion');
 const { getToken } = require('../configuracion/passport');
@@ -56,19 +57,16 @@ const iniciarSesion = async (req, res) => {
     }
 
     const pinValido = usuarioEncontrado.pinAutenticacion
-      && usuarioEncontrado.pinAutenticacionExpira
-      && usuarioEncontrado.pinAutenticacionExpira > new Date()
       && await argon2.verify(usuarioEncontrado.pinAutenticacion, pin);
 
     if (!pinValido) {
       return res.status(401).json({
-        error: 'El PIN es incorrecto o ha expirado. Solicite uno nuevo.',
-        codigo: 'PIN_INVALIDO_O_EXPIRADO',
+        error: 'El PIN es incorrecto o ya fue utilizado. Solicite uno nuevo.',
+        codigo: 'PIN_INVALIDO_O_UTILIZADO',
       });
     }
 
     usuarioEncontrado.pinAutenticacion = null;
-    usuarioEncontrado.pinAutenticacionExpira = null;
 
     // Reiniciar intentos fallidos al tener éxito
     usuarioEncontrado.intentosFallidos = 0;
@@ -84,22 +82,30 @@ const iniciarSesion = async (req, res) => {
 
     const token = getToken(payload);
 
-    // Registrar sesión en base de datos
+    // No emitir un token si no puede guardarse la sesión que autoriza su uso.
     try {
-      await Sesion.update(
-        { estado: 'cerrada', fechaFin: new Date() },
-        { where: { usuarioId: usuarioEncontrado.id, estado: 'activa' } }
-      );
+      await db.transaction(async (transaction) => {
+        await Sesion.update(
+          { estado: 'cerrada', fechaFin: new Date() },
+          {
+            where: { usuarioId: usuarioEncontrado.id, estado: 'activa' },
+            transaction,
+          }
+        );
 
-      await Sesion.create({
-        usuarioId: usuarioEncontrado.id,
-        token: hashToken(token),
-        ip: req.ip || req.connection?.remoteAddress || '127.0.0.1',
-        fechaInicio: new Date(),
-        estado: 'activa',
+        await Sesion.create({
+          usuarioId: usuarioEncontrado.id,
+          token: hashToken(token),
+          ip: req.ip || req.connection?.remoteAddress || '127.0.0.1',
+          fechaInicio: new Date(),
+          estado: 'activa',
+        }, { transaction });
       });
     } catch (sesionError) {
-      console.warn('Aviso: No se pudo registrar la sesión en la base de datos:', sesionError.message);
+      console.error('No se pudo registrar la sesión de autenticación:', sesionError);
+      return res.status(500).json({
+        error: 'No se pudo registrar la sesión. No se emitió un token de acceso.',
+      });
     }
 
     return res.json({
@@ -202,21 +208,19 @@ const enviarPin = async (req, res) => {
       });
     }
 
-    // Generar un PIN de un solo uso que vence en diez minutos.
+    // El PIN no vence por tiempo; es de un solo uso y solicitar otro lo reemplaza.
     const pinTemporal = randomInt(100000, 1000000).toString();
     usuarioEncontrado.pinAutenticacion = await argon2.hash(pinTemporal);
-    usuarioEncontrado.pinAutenticacionExpira = new Date(Date.now() + 10 * 60 * 1000);
     await usuarioEncontrado.save();
 
     try {
       await enviarCorreo(
         usuarioEncontrado.correoElectronico,
         'PIN para autorizar el acceso a la API',
-        `Hola ${usuarioEncontrado.nombre},\n\nSu PIN de acceso es: ${pinTemporal}\n\nVence en 10 minutos y solo puede usarse una vez. Si no solicitó este código, ignore este correo.`
+        `Hola ${usuarioEncontrado.nombre},\n\nSu PIN de acceso es: ${pinTemporal}\n\nEste PIN se mantiene válido hasta que lo use o solicite uno nuevo. Si no solicitó este código, ignore este correo.`
       );
     } catch (error) {
       usuarioEncontrado.pinAutenticacion = null;
-      usuarioEncontrado.pinAutenticacionExpira = null;
       try {
         await usuarioEncontrado.save();
       } catch (invalidacionError) {

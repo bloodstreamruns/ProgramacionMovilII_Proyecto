@@ -46,7 +46,22 @@ passport.use(new JwtStrategy(
   }
 ));
 
-const autenticar = passport.authenticate('jwt', { session: false });
+const autenticar = (req, res, next) => {
+  passport.authenticate('jwt', { session: false }, (error, usuario, info) => {
+    if (error) {
+      return next(error);
+    }
+
+    if (!usuario) {
+      return res.status(401).json({
+        error: info?.message || 'Token no proporcionado, inválido o sesión no activa',
+      });
+    }
+
+    req.user = usuario;
+    return next();
+  })(req, res, next);
+};
 
 const autorizar = (...roles) => (req, res, next) => {
   if (!req.user) {

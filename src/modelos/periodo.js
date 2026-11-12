@@ -8,7 +8,7 @@ const periodo = db.define('Periodo', {
     autoIncrement: true,
   },
   periodoquecursa: {
-    type: DataTypes.STRING(10),
+    type: DataTypes.STRING(50),
     allowNull: false,
   },
   año: {
@@ -22,6 +22,11 @@ const periodo = db.define('Periodo', {
   fechafin: {
     type: DataTypes.DATE,
     allowNull: true,
+  },
+  estado: {
+    type: DataTypes.STRING(20),
+    allowNull: false,
+    defaultValue: 'Activo',
   },
 }, {
   tableName: 'periodos',
